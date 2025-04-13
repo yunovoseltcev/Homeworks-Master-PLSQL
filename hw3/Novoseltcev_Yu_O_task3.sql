@@ -16,7 +16,7 @@ end;
 declare
   v_description varchar2(100 char) := 'Сброс платежа в "ошибочный статус" с указанием причины.';
   v_reason varchar2(100 char) := 'недостаточно средств';
-  c_error_status number(1) := '2';
+  c_error_status number(1) := 2;
 begin  
   dbms_output.put_line (v_description||' Статус: '||c_error_status||'. Причина: '||v_reason);
 end;
@@ -43,19 +43,16 @@ end;
 
 --5. Добавление или обновление данных платежа по списку
 declare
-  v_description varchar2(100 char) := 'Данные платежа добавлены или обновлены по списку';
-  v_field_id varchar2(10 char) := 'id_поля';
-  v_value varchar2(10 char) := 'значение';
+  v_description varchar2(100 char) := 'Данные платежа добавлены или обновлены по списку id_поля/значение';
 begin  
-  dbms_output.put_line (v_description||' '||v_field_id||'/'||v_value);
+  dbms_output.put_line (v_description);
 end;
 /
 
 --6. Удаление деталей платежа списку
 declare
-  v_description varchar2(100 char) := 'Детали платежа удалены по списку';
-  v_fields_id varchar2(10 char) := 'id_полей';
+  v_description varchar2(100 char) := 'Детали платежа удалены по списку id_полей';
 begin  
-  dbms_output.put_line (v_description||' '||v_fields_id);
+  dbms_output.put_line (v_description);
 end;
 /
