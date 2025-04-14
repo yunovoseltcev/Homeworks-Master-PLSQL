@@ -2,7 +2,7 @@
 declare
   v_str varchar2(100 char) := 'Платеж создан. Статус: 0';
 begin
-  dbms_output.put_line('Платеж создан. Статус: 0');
+  dbms_output.put_line(v_str);
 end;
 /
 
