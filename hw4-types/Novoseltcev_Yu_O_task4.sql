@@ -7,7 +7,7 @@
 declare
   v_description varchar2(100 char) := 'Платеж создан.';
   v_current_time timestamp := sysdate;
-  c_create_status number(10) := 0;
+  c_create_status number(1) := 0;
 begin
   dbms_output.put_line(v_description||' Статус: '||c_create_status
                                     ||'. Дата создания записи: '||to_char(v_current_time,'dd-mm-yyyy hh24:mi:ss:ff3'));
@@ -19,7 +19,7 @@ declare
   v_description varchar2(100 char) := 'Сброс платежа в "ошибочный статус" с указанием причины.';
   v_reason varchar2(200 char) := 'недостаточно средств';
   v_current_time timestamp := sysdate;
-  c_error_status number(10) := 2;
+  c_error_status number(1) := 2;
 begin  
   dbms_output.put_line (v_description||' Статус: '||c_error_status||'. Причина: '||v_reason
                                      ||'. Дата создания записи (День): '||to_char(v_current_time,'DAY'));
@@ -31,7 +31,7 @@ declare
   v_description varchar2(100 char) := 'Отмена платежа с указанием причины.';
   v_reason varchar2(200 char) := 'ошибка пользователя';
   v_current_time timestamp := sysdate;
-  c_cancel_status number(10) := 3;
+  c_cancel_status number(1) := 3;
 begin  
   dbms_output.put_line (v_description||' Статус: '||c_cancel_status||'. Причина: '||v_reason
                                      ||'. Дата создания записи (Месяц): '||to_char(v_current_time,'MONTH'));
@@ -42,7 +42,7 @@ end;
 declare
   v_description varchar2(100 char) := 'Успешное завершение платежа.';
   v_current_time timestamp := sysdate;
-  c_success_status number(10) := 1;
+  c_success_status number(1) := 1;
 begin  
   dbms_output.put_line (v_description||' Статус: '||c_success_status
                                      ||'. Дата создания записи (1-ый день месяца): '||trunc(v_current_time,'MONTH'));
