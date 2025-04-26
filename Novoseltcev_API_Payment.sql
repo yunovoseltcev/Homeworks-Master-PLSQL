@@ -16,9 +16,22 @@ begin
   v_payment_detail_array.extend(2);
   v_payment_detail_array(1) := t_payment_detail(1,'СБП');
   v_payment_detail_array(2) := t_payment_detail(2,'91.231.88.28');
-  dbms_output.put_line(v_description||' Статус: '||c_create_status
-                                    ||'. Дата создания записи: '||to_char(v_current_time,'dd-mm-yyyy hh24:mi:ss:ff3'));
-  dbms_output.put_line('ID платежа = '||v_payment_id);
+  --Проверки значений в коллекции
+  if v_payment_detail_array is not empty then
+    for i in v_payment_detail_array.first..v_payment_detail_array.last loop
+      if v_payment_detail_array(i).field_id is null then
+        dbms_output.put_line('Значение в поле field_value не может быть пустым');
+      end if;
+      if v_payment_detail_array(i).field_value is null then
+        dbms_output.put_line('ID поля field_id не может быть пустым');
+      end if;
+    end loop;
+    dbms_output.put_line(v_description||' Статус: '||c_create_status
+                                      ||'. Дата создания записи: '||to_char(v_current_time,'dd-mm-yyyy hh24:mi:ss:ff3'));
+    dbms_output.put_line('ID платежа = '||v_payment_id);
+  else
+    dbms_output.put_line('Коллекция не содержит данных');
+  end if;
 end;
 /
 
@@ -92,8 +105,21 @@ begin
   if v_payment_id is null then
     dbms_output.put_line('ID объекта не может быть пустым');
   else
-    dbms_output.put_line (v_description||'. Дата создания записи: '||to_char(v_current_time,'dd-mm-yyyy hh24:mi:ss'));
-    dbms_output.put_line('ID платежа = '||v_payment_id);
+    --Проверки значений в коллекции
+    if v_payment_detail_array is not empty then
+      for i in v_payment_detail_array.first..v_payment_detail_array.last loop
+        if v_payment_detail_array(i).field_id is null then
+          dbms_output.put_line('Значение в поле field_value не может быть пустым');
+        end if;
+        if v_payment_detail_array(i).field_value is null then
+          dbms_output.put_line('ID поля field_id не может быть пустым');
+        end if;
+      end loop;
+      dbms_output.put_line (v_description||'. Дата создания записи: '||to_char(v_current_time,'dd-mm-yyyy hh24:mi:ss'));
+      dbms_output.put_line('ID платежа = '||v_payment_id);
+    else
+      dbms_output.put_line('Коллекция не содержит данных');
+    end if;
   end if;
 end;
 /
@@ -109,8 +135,18 @@ begin
   if v_payment_id is null then
     dbms_output.put_line('ID объекта не может быть пустым');
   else
-    dbms_output.put_line (v_description||'. Дата создания записи: '||to_char(v_current_time,'dd-mm-yyyy hh24:mi:ss'));
-    dbms_output.put_line('ID платежа = '||v_payment_id);
+    --Проверки значений в коллекции
+    if v_number_array is not empty then
+      for i in v_number_array.first..v_number_array.last loop
+        if v_number_array(i) is null then
+          dbms_output.put_line('Значение в поле не может быть пустым');
+        end if;
+      end loop;
+      dbms_output.put_line (v_description||'. Дата создания записи: '||to_char(v_current_time,'dd-mm-yyyy hh24:mi:ss'));
+      dbms_output.put_line('ID платежа = '||v_payment_id);
+    else
+      dbms_output.put_line('Коллекция не содержит данных');
+    end if;
   end if;
 end;
 /
