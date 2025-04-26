@@ -9,11 +9,10 @@ declare
   v_current_time    timestamp := sysdate;
   v_payment_id      PAYMENT.PAYMENT_ID%type := 1;
   
-  v_payment_detail_array t_payment_detail_array;
+  v_payment_detail_array t_payment_detail_array := t_payment_detail_array();
   
   c_create_status   PAYMENT.STATUS%type := 0;
 begin
-  v_payment_detail_array := t_payment_detail_array();
   v_payment_detail_array.extend(2);
   v_payment_detail_array(1) := t_payment_detail(1,'СБП');
   v_payment_detail_array(2) := t_payment_detail(2,'91.231.88.28');
@@ -86,9 +85,8 @@ declare
   v_current_time    timestamp := sysdate;
   v_payment_id      PAYMENT.PAYMENT_ID%type := 1;
   
-  v_payment_detail_array t_payment_detail_array;
+  v_payment_detail_array t_payment_detail_array := t_payment_detail_array();
 begin  
-  v_payment_detail_array := t_payment_detail_array();
   v_payment_detail_array.extend(1);
   v_payment_detail_array(1) := t_payment_detail(3,'Долг');
   if v_payment_id is null then
@@ -106,9 +104,8 @@ declare
   v_current_time    timestamp := sysdate;
   v_payment_id      PAYMENT.PAYMENT_ID%type := null;
   
-  v_number_array    t_number_array;
+  v_number_array    t_number_array := t_number_array(1,2,4);
 begin  
-  v_number_array := t_number_array(1,2,4);
   if v_payment_id is null then
     dbms_output.put_line('ID объекта не может быть пустым');
   else
