@@ -97,7 +97,6 @@ declare
   v_description     varchar2(100 char) := 'Данные платежа добавлены или обновлены по списку id_поля/значение';
   v_current_time    timestamp := sysdate;
   v_payment_id      PAYMENT.PAYMENT_ID%type := 1;
-  v_check_errors    number(1) := 0; --Наличие ошибок
   
   v_payment_detail_array t_payment_detail_array := t_payment_detail_array();
 begin  
@@ -119,10 +118,8 @@ begin
     else
       dbms_output.put_line('Коллекция не содержит данных');
     end if;
-    if v_check_errors = 0 then
       dbms_output.put_line (v_description||'. Дата создания записи: '||to_char(v_current_time,'dd-mm-yyyy hh24:mi:ss'));
       dbms_output.put_line('ID платежа = '||v_payment_id);
-    end if;
   end if;
 end;
 /
