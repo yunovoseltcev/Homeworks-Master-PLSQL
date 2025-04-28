@@ -124,7 +124,7 @@ begin
 end;
 /
 
---6. Удаление деталей платежа  по списку
+--6. Удаление деталей платежа по списку
 declare
   v_description     varchar2(100 char) := 'Детали платежа удалены по списку id_полей';
   v_current_time    timestamp := sysdate;
