@@ -36,11 +36,12 @@ begin
         dbms_output.put_line('Значение в поле field_id не может быть пустым');
       elsif v_payment_detail_array(i).field_value is null then
         dbms_output.put_line('ID поля field_value не может быть пустым');
-      else
-        --Создаем запись о детали платежа
-        insert into PAYMENT_DETAIL values (v_payment_id, v_payment_detail_array(i).field_id, v_payment_detail_array(i).field_value);
       end if;
     end loop;
+    --Создаем запись о детали платежа
+    insert into PAYMENT_DETAIL (select v_payment_id, pda.field_id, pda.field_value 
+                                 from table(v_payment_detail_array) pda 
+                                where pda.field_id is not null and pda.field_value is not null);
   else
     dbms_output.put_line('Коллекция не содержит данных');
   end if;
@@ -143,15 +144,16 @@ begin
           dbms_output.put_line('Значение в поле field_id не может быть пустым');
         elsif v_payment_detail_array(i).field_value is null then
           dbms_output.put_line('ID поля field_value не может быть пустым');
-        else
-          merge into PAYMENT_DETAIL pay_d using (select v_payment_detail_array(i).FIELD_ID FIELD_ID, v_payment_detail_array(i).FIELD_VALUE FIELD_VALUE from dual) arr
-             on (pay_d.PAYMENT_ID = v_payment_id and pay_d.FIELD_ID = arr.FIELD_ID)
-           when matched then 
-             update set pay_d.field_value = arr.FIELD_VALUE
-           when not matched then 
-             insert values (v_payment_id, v_payment_detail_array(i).field_id, v_payment_detail_array(i).field_value);
         end if;
       end loop;
+      merge into PAYMENT_DETAIL pay_d using (select pda.field_id, pda.field_value 
+                                               from table(v_payment_detail_array) pda 
+                                              where pda.field_id is not null and pda.field_value is not null) arr
+              on (pay_d.PAYMENT_ID = v_payment_id and pay_d.FIELD_ID = arr.FIELD_ID)
+            when matched then 
+              update set pay_d.FIELD_VALUE = arr.FIELD_VALUE
+            when not matched then 
+              insert values (v_payment_id, arr.field_id, arr.field_value);
     else
       dbms_output.put_line('Коллекция не содержит данных');
     end if;
@@ -177,10 +179,11 @@ begin
       for i in v_number_array.first..v_number_array.last loop
         if v_number_array(i) is null then
           dbms_output.put_line('Значение в поле не может быть пустым');
-        else
-          delete from PAYMENT_DETAIL pay_d where pay_d.PAYMENT_ID = v_payment_id and pay_d.FIELD_ID = v_number_array(i);
         end if;
       end loop;
+      delete from PAYMENT_DETAIL pay_d 
+       where pay_d.PAYMENT_ID = v_payment_id 
+         and pay_d.FIELD_ID in (select vna.column_value from table(v_number_array) vna);
     else
       dbms_output.put_line('Коллекция не содержит данных');
     end if;
