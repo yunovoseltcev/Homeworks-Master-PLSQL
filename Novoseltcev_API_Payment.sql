@@ -62,8 +62,7 @@ begin
   else
     update PAYMENT pay
        set pay.STATUS = c_error_status,
-           pay.STATUS_CHANGE_REASON = p_reason,
-           pay.UPDATE_DTIME_TECH = p_current_time
+           pay.STATUS_CHANGE_REASON = p_reason
      where pay.PAYMENT_ID = p_payment_id
        and pay.STATUS = 0;
 
