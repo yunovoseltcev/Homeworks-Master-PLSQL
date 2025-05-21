@@ -1,4 +1,4 @@
-﻿create or replace package plsql14_student2.payment_detail_api_pack is
+﻿create or replace package payment_detail_api_pack is
 
   -- Author  : ЮРА
   -- Created : 11.05.2025 13:12:34
@@ -15,7 +15,7 @@
 end payment_detail_api_pack;
 /
 
-create or replace package body plsql14_student2.payment_detail_api_pack is
+create or replace package body payment_detail_api_pack is
   
   --5. Добавление или обновление данных платежа по списку
   procedure insert_or_update_payment_detail(p_payment_id           PAYMENT.PAYMENT_ID%type,

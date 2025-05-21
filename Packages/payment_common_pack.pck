@@ -1,4 +1,4 @@
-﻿create or replace package plsql14_student2.PAYMENT_COMMON_PACK is
+﻿create or replace package payment_common_pack is
 
   -- Author  : ЮРА
   -- Created : 21.05.2025 20:14:35
@@ -21,10 +21,10 @@
   --Проверки коллекции t_payment_detail_array
   procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array);
 
-end PAYMENT_COMMON_PACK;
+end payment_common_pack;
 /
 
-create or replace package body plsql14_student2.PAYMENT_COMMON_PACK is
+create or replace package body payment_common_pack is
 
   --Проверки коллекции t_payment_detail_array
   procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array) 
@@ -39,6 +39,6 @@ create or replace package body plsql14_student2.PAYMENT_COMMON_PACK is
       end loop;
   end checkPaymentDetailCollection;
 
-end PAYMENT_COMMON_PACK;
+end payment_common_pack;
 /
 
