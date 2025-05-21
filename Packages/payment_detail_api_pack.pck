@@ -4,34 +4,37 @@
   -- Created : 11.05.2025 13:12:34
   -- Purpose : API по деталям платежа
   
-  --5. Добавление или обновление данных платежа по списку
+  -- Добавление или обновление данных платежа по списку
   procedure insert_or_update_payment_detail(p_payment_id           PAYMENT.PAYMENT_ID%type,
                                             p_payment_detail_array t_payment_detail_array);
   
-  --6. Удаление деталей платежа  по списку
+  -- Удаление деталей платежа  по списку
   procedure delete_payment_detail(p_payment_id   PAYMENT.PAYMENT_ID%type,
-                                  p_number_array t_number_array);                                  
+                                  p_number_array t_number_array); 
+                                  
+  -- Проверка вызываемая из триггера
+  procedure is_changes_throuh_api;                                 
 
 end payment_detail_api_pack;
 /
 
 create or replace package body plsql14_student2.payment_detail_api_pack is
   
+  g_is_api boolean := false; -- признак, выполняется ли изменение через API
 
-  --Проверки коллекции t_payment_detail_array
-  procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array) 
-  is
+  -- разрешение менять данные
+  procedure allow_changes is
   begin
-    for i in p_payment_detail_array.first..p_payment_detail_array.last loop
-        if p_payment_detail_array(i).field_id is null then
-          dbms_output.put_line('Значение в поле field_id не может быть пустым');
-        elsif p_payment_detail_array(i).field_value is null then
-          dbms_output.put_line('ID поля field_value не может быть пустым');
-        end if;
-      end loop;
-  end checkPaymentDetailCollection;
-  
-  --5. Добавление или обновление данных платежа по списку
+    g_is_api := true;
+  end;
+
+  -- запрет менять данные
+  procedure disallow_changes is
+  begin
+    g_is_api := false;
+  end;
+
+  -- Добавление или обновление данных платежа по списку
   procedure insert_or_update_payment_detail(p_payment_id           PAYMENT.PAYMENT_ID%type,
                                             p_payment_detail_array t_payment_detail_array)
   is
@@ -42,7 +45,10 @@ create or replace package body plsql14_student2.payment_detail_api_pack is
     else
       --Проверки значений в коллекции
       if p_payment_detail_array is not empty then
-        checkPaymentDetailCollection(p_payment_detail_array);
+        payment_common_pack.checkPaymentDetailCollection(p_payment_detail_array);
+        
+        allow_changes();
+        
         merge into PAYMENT_DETAIL pay_d using (select pda.field_id, pda.field_value
                                                  from table(p_payment_detail_array) pda
                                                 where pda.field_id is not null and pda.field_value is not null) arr
@@ -52,14 +58,20 @@ create or replace package body plsql14_student2.payment_detail_api_pack is
               when not matched then
                 insert values (p_payment_id, arr.field_id, arr.field_value);
       else
-        dbms_output.put_line('Коллекция не содержит данных');
+        raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                                payment_common_pack.c_error_msg_empty_collection);
       end if;
-        dbms_output.put_line (v_description||'. Дата создания записи: '||to_char(systimestamp,'dd-mm-yyyy hh24:mi:ss'));
-        dbms_output.put_line('ID платежа = '||p_payment_id);
     end if;
+    
+    disallow_changes();
+    
+  exception
+    when others then
+      disallow_changes();
+      raise;
   end insert_or_update_payment_detail;
   
-  --6. Удаление деталей платежа  по списку
+  -- Удаление деталей платежа  по списку
   procedure delete_payment_detail(p_payment_id   PAYMENT.PAYMENT_ID%type,
                                   p_number_array t_number_array)
   is
@@ -67,25 +79,40 @@ create or replace package body plsql14_student2.payment_detail_api_pack is
 
   begin
     if p_payment_id is null then
-      dbms_output.put_line('ID объекта не может быть пустым');
+      raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                              payment_common_pack.c_error_msg_empty_payment_id);
     else
       --Проверки значений в коллекции
       if p_number_array is not empty then
-        for i in p_number_array.first..p_number_array.last loop
-          if p_number_array(i) is null then
-            dbms_output.put_line('Значение в поле не может быть пустым');
-          end if;
-        end loop;
+        
+        allow_changes();
+      
         delete from PAYMENT_DETAIL pay_d
          where pay_d.PAYMENT_ID = p_payment_id
            and pay_d.FIELD_ID in (select pna.column_value from table(p_number_array) pna);
       else
-        dbms_output.put_line('Коллекция не содержит данных');
+        raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                                payment_common_pack.c_error_msg_empty_collection);
       end if;
-      dbms_output.put_line (v_description||'. Дата создания записи: '||to_char(systimestamp,'dd-mm-yyyy hh24:mi:ss'));
-      dbms_output.put_line('ID платежа = '||p_payment_id);
     end if;
+    
+    disallow_changes();
+    
+  exception
+    when others then
+      disallow_changes();
+      raise;
   end delete_payment_detail;
+  
+  -- Проверка вызываемая из триггера
+  procedure is_changes_throuh_api 
+  is
+  begin
+    if not g_is_api then
+      raise_application_error(payment_common_pack.c_error_code_manual_changes, 
+                              payment_common_pack.c_error_msg_manual_changes);
+    end if;
+  end is_changes_throuh_api;
   
 end payment_detail_api_pack;
 /
