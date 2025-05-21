@@ -1,30 +1,38 @@
-﻿create or replace package payment_common_pack is
+﻿create or replace package plsql14_student2.PAYMENT_COMMON_PACK is
 
   -- Author  : ЮРА
   -- Created : 21.05.2025 20:14:35
   -- Purpose : Общие объекты API
   
-  --Сообщения ошибок
+  -- Сообщения ошибок
   c_error_msg_empty_field_id     constant varchar2(100 char) := 'Значение в поле field_id не может быть пустым';
   c_error_msg_empty_field_value  constant varchar2(100 char) := 'ID поля field_value не может быть пустым';
   c_error_msg_empty_collection   constant varchar2(100 char) := 'Коллекция не содержит данных';
   c_error_msg_empty_payment_id   constant varchar2(100 char) := 'ID объекта не может быть пустым';
   c_error_msg_empty_reason       constant varchar2(100 char) := 'Причина не может быть пустой';
+  c_error_msg_delete_forbidden   constant varchar2(100 char) := 'Удаление объекта запрещено';
+  c_error_msg_manual_changes     constant varchar2(100 char) := 'Изменения должны выполняться только через API';
   
-  --Коды ошибок
+  -- Коды ошибок
   c_error_code_empty_invalid_input_parametr constant number(10) := -20001;
+  c_error_code_delete_forbidden             constant number(10) := -20002;
+  c_error_code_manual_changes               constant number(10) := -20003;
   
-  --Объекты исключений
+  -- Объекты исключений
   e_invalid_input_parametr exception;
   pragma exception_init(e_invalid_input_parametr, c_error_code_empty_invalid_input_parametr);
+  e_delete_forbidden exception;
+  pragma exception_init(e_delete_forbidden, c_error_code_delete_forbidden);
+  e_manual_changes exception;
+  pragma exception_init(e_manual_changes, c_error_code_manual_changes);
   
-  --Проверки коллекции t_payment_detail_array
+  -- Проверки коллекции t_payment_detail_array
   procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array);
 
-end payment_common_pack;
+end PAYMENT_COMMON_PACK;
 /
 
-create or replace package body payment_common_pack is
+create or replace package body plsql14_student2.PAYMENT_COMMON_PACK is
 
   --Проверки коллекции t_payment_detail_array
   procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array) 
@@ -39,6 +47,6 @@ create or replace package body payment_common_pack is
       end loop;
   end checkPaymentDetailCollection;
 
-end payment_common_pack;
+end PAYMENT_COMMON_PACK;
 /
 
