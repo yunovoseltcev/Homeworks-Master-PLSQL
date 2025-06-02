@@ -1,9 +1,10 @@
-﻿create or replace package plsql14_student2.payment_api_pack is
+﻿create or replace package payment_api_pack is
 
   -- Author  : ЮРА
   -- Created : 11.05.2025 12:45:20
   -- Purpose : API по платежу
   
+  --Статусы проведения платежа
   c_create_status   PAYMENT.STATUS%type := 0;
   c_success_status  PAYMENT.STATUS%type := 1;
   c_error_status    PAYMENT.STATUS%type := 2;
@@ -32,7 +33,9 @@
 end payment_api_pack;
 /
 
-create or replace package body plsql14_student2.payment_api_pack is
+create or replace package body payment_api_pack is
+
+  
 
   -- 1. Создание платежа
   function create_payment (p_summa                PAYMENT.SUMMA%type,
@@ -48,13 +51,7 @@ create or replace package body plsql14_student2.payment_api_pack is
     
   begin
     if p_payment_detail_array is not empty then
-      for i in p_payment_detail_array.first..p_payment_detail_array.last loop
-        if p_payment_detail_array(i).field_id is null then
-          dbms_output.put_line('Значение в поле field_id не может быть пустым');
-        elsif p_payment_detail_array(i).field_value is null then
-          dbms_output.put_line('ID поля field_value не может быть пустым');
-        end if;
-      end loop;
+      payment_common_pack.checkPaymentDetailCollection(p_payment_detail_array);
       --Создаем запись о платеже
       insert into PAYMENT values (payment_seq.nextval, p_create_dtime, p_summa,
                                   p_currency_id, p_from_client_id, p_to_client_id,
@@ -69,7 +66,8 @@ create or replace package body plsql14_student2.payment_api_pack is
                                         ||'. Дата создания записи: '||to_char(p_create_dtime,'dd-mm-yyyy hh24:mi:ss:ff3'));
       dbms_output.put_line('ID платежа = '||v_payment_id);
     else
-      dbms_output.put_line('Коллекция не содержит данных');
+      raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                              payment_common_pack.c_error_msg_empty_collection);
     end if;
     return v_payment_id;
   end create_payment;
@@ -81,9 +79,11 @@ create or replace package body plsql14_student2.payment_api_pack is
     v_description     varchar2(100 char) := 'Сброс платежа в "ошибочный статус" с указанием причины.';
   begin
     if p_payment_id is null then
-      dbms_output.put_line('ID объекта не может быть пустым');
+      raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                              payment_common_pack.c_error_msg_empty_payment_id);
     elsif p_reason is null then
-      dbms_output.put_line('Причина не может быть пустой');
+      raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                              payment_common_pack.c_error_msg_empty_reason);
     else
       update PAYMENT pay
          set pay.STATUS = c_error_status,
@@ -103,9 +103,11 @@ create or replace package body plsql14_student2.payment_api_pack is
     v_description     varchar2(100 char) := 'Отмена платежа с указанием причины.';
   begin
     if p_payment_id is null then
-      dbms_output.put_line('ID объекта не может быть пустым');
+      raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                              payment_common_pack.c_error_msg_empty_payment_id);
     elsif p_reason is null then
-      dbms_output.put_line('Причина не может быть пустой');
+      raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                              payment_common_pack.c_error_msg_empty_reason);
     else
       update PAYMENT pay
          set pay.STATUS = c_cancel_status,
@@ -124,7 +126,8 @@ create or replace package body plsql14_student2.payment_api_pack is
     v_description     varchar2(100 char) := 'Успешное завершение платежа.';
   begin
     if p_payment_id is null then
-      dbms_output.put_line('ID объекта не может быть пустым');
+      raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                              payment_common_pack.c_error_msg_empty_payment_id);
     else
       update PAYMENT pay
          set pay.STATUS = c_success_status
