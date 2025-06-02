@@ -1,4 +1,4 @@
-﻿create or replace trigger plsql14_student2.payment_b_d_restrict
+﻿create or replace trigger payment_b_d_restrict
   before delete
   on payment 
 declare

@@ -182,7 +182,7 @@ exception
 end;
 /
 
--- 4. Платеж завершен успешно
+-- 4. Успешное завершение платежа
 declare
   v_payment_id      PAYMENT.PAYMENT_ID%type;
 begin
@@ -190,7 +190,7 @@ begin
   raise_application_error(-20999, 'Unit-тест или API выполнены не верно');
 exception 
   when payment_common_pack.e_invalid_input_parametr then
-    dbms_output.put_line('Платеж завершен успешно. Ошибка: '||sqlerrm);
+    dbms_output.put_line('Успешное завершение платежа. Ошибка: '||sqlerrm);
 end;
 /
 

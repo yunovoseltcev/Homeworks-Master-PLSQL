@@ -1,4 +1,4 @@
-﻿create or replace trigger plsql14_student2.payment_detail_b_iud_api
+﻿create or replace trigger payment_detail_b_iud_api
   before insert or update or delete
   on payment_detail 
 declare
