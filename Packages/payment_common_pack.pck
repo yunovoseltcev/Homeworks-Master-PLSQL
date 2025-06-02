@@ -1,4 +1,4 @@
-create or replace package PAYMENT_COMMON_PACK is
+﻿create or replace package PAYMENT_COMMON_PACK is
 
   -- Author  : ЮРА
   -- Created : 21.05.2025 20:14:35
@@ -28,13 +28,26 @@ create or replace package PAYMENT_COMMON_PACK is
   
   -- Проверки коллекции t_payment_detail_array
   procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array);
+  
+  -- Включить/отключить разрешение менять вручную данные
+  procedure enable_manual_changes;
+  procedure disable_manual_changes;
+  
+  -- Разрешены ли изменения в ручном режиме
+  function is_manual_changes_allowed return boolean;
 
 end PAYMENT_COMMON_PACK;
 /
 
 create or replace package body PAYMENT_COMMON_PACK is
 
-  --Проверки коллекции t_payment_detail_array
+  -- Константы
+  g_is_api boolean := false; -- признак, выполняется ли изменение через API
+
+  -- Переменные
+  g_enable_manual_changes boolean := false; -- Разрешены ли изменения не через API
+
+  -- Проверки коллекции t_payment_detail_array
   procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array) 
   is
   begin
@@ -46,6 +59,26 @@ create or replace package body PAYMENT_COMMON_PACK is
         end if;
       end loop;
   end checkPaymentDetailCollection;
+  
+  -- Включить/отключить разрешение менять вручную данные
+  procedure enable_manual_changes
+  is
+  begin
+    g_enable_manual_changes := true;
+  end enable_manual_changes;
+  
+  procedure disable_manual_changes
+  is
+  begin
+    g_enable_manual_changes := false;
+  end disable_manual_changes;
+  
+  -- Разрешены ли изменения в ручном режиме
+  function is_manual_changes_allowed return boolean
+  is
+  begin
+    return g_enable_manual_changes;
+  end is_manual_changes_allowed;
 
 end PAYMENT_COMMON_PACK;
 /

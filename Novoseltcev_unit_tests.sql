@@ -304,3 +304,56 @@ exception
     dbms_output.put_line('Проверка запрета ручного удаления деталей платежа. Ошибка: '||sqlerrm);
 end;
 /
+
+------ Тесты для ручных изменений
+-- 1. Проверка разрешения ручного обновления платежа
+declare
+  v_payment_id      PAYMENT.PAYMENT_ID%type := 13;
+begin
+  payment_common_pack.enable_manual_changes();
+  
+  update PAYMENT pay
+     set pay.STATUS = payment_api_pack.c_cancel_status
+   where pay.PAYMENT_ID = 13;
+   
+  payment_common_pack.disable_manual_changes();
+exception 
+  when others then
+    payment_common_pack.disable_manual_changes();
+    raise;
+end;
+/
+
+-- 2. Проверка разрешения ручного обновления деталей платежа
+declare
+  v_payment_id      PAYMENT.PAYMENT_ID%type := 13;
+begin
+  payment_common_pack.enable_manual_changes();
+  
+  update payment_detail pd 
+     set field_id = 1 
+   where pd.payment_id = v_payment_id;
+  
+  payment_common_pack.disable_manual_changes();
+exception 
+  when others then
+    payment_common_pack.disable_manual_changes();
+    raise;
+end;
+/
+
+-- 3. Проверка разрешения ручного удаления платежа и его деталей
+declare
+begin
+  payment_common_pack.enable_manual_changes();
+  
+  delete payment_detail;
+  delete payment;
+  
+  payment_common_pack.disable_manual_changes();
+exception 
+  when others then
+    payment_common_pack.disable_manual_changes();
+    raise;
+end;
+/

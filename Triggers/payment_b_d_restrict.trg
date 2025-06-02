@@ -3,8 +3,7 @@
   on payment 
 declare
 begin
-  raise_application_error(payment_common_pack.c_error_code_delete_forbidden,
-                          payment_common_pack.c_error_msg_delete_forbidden);
+  payment_api_pack.check_payment_delete_restriction();
 end payment_b_d_restrict;
 /
 
