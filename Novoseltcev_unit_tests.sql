@@ -1,6 +1,7 @@
 -- Заготовка для unit-тестов
 
 -- Проверка исполнения тестов
+
 select * from payment where payment_id = 128;
 /
 select * from payment_detail where payment_id = 130;

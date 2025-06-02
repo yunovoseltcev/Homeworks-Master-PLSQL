@@ -86,7 +86,7 @@ create or replace package body payment_detail_api_pack is
       if p_number_array is not empty then
         
         allow_changes();
-      
+
         delete from PAYMENT_DETAIL pay_d
          where pay_d.PAYMENT_ID = p_payment_id
            and pay_d.FIELD_ID in (select pna.column_value from table(p_number_array) pna);

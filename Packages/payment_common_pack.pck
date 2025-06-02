@@ -1,4 +1,4 @@
-﻿create or replace package PAYMENT_COMMON_PACK is
+create or replace package PAYMENT_COMMON_PACK is
 
   -- Author  : ЮРА
   -- Created : 21.05.2025 20:14:35

@@ -69,7 +69,6 @@ create or replace package body payment_api_pack is
       payment_common_pack.checkPaymentDetailCollection(p_payment_detail_array);
       
       allow_changes();
-      
       --Создаем запись о платеже
       insert into PAYMENT values (payment_seq.nextval, p_create_dtime, p_summa,
                                   p_currency_id, p_from_client_id, p_to_client_id,
