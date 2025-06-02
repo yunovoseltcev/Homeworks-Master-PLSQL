@@ -68,7 +68,6 @@ create or replace package body payment_api_pack is
     
   begin
     if p_payment_detail_array is not empty then
-      payment_common_pack.checkPaymentDetailCollection(p_payment_detail_array);
       
       allow_changes();
       
