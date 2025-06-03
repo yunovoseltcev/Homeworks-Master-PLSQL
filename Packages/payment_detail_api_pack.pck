@@ -33,19 +33,34 @@ create or replace package body payment_detail_api_pack is
   begin
     g_is_api := false;
   end;
+  
+  -- Проверки коллекции t_payment_detail_array
+  procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array) 
+  is
+  begin
+    for i in p_payment_detail_array.first..p_payment_detail_array.last loop
+        if p_payment_detail_array(i).field_id is null then
+          raise_application_error (payment_common_pack.c_error_code_empty_invalid_input_parametr, 
+                                   payment_common_pack.c_error_msg_empty_field_id);
+        elsif p_payment_detail_array(i).field_value is null then
+          raise_application_error (payment_common_pack.c_error_code_empty_invalid_input_parametr, 
+                                   payment_common_pack.c_error_msg_empty_field_value);
+        end if;
+      end loop;
+  end checkPaymentDetailCollection;
 
   -- Добавление или обновление данных платежа по списку
   procedure insert_or_update_payment_detail(p_payment_id           PAYMENT.PAYMENT_ID%type,
                                             p_payment_detail_array t_payment_detail_array)
   is
-    v_description     varchar2(100 char) := 'Данные платежа добавлены или обновлены по списку id_поля/значение';
   begin
     if p_payment_id is null then
-      dbms_output.put_line('ID объекта не может быть пустым');
+      raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
+                              payment_common_pack.c_error_msg_empty_payment_id);
     else
       --Проверки значений в коллекции
       if p_payment_detail_array is not empty then
-        payment_common_pack.checkPaymentDetailCollection(p_payment_detail_array);
+        checkPaymentDetailCollection(p_payment_detail_array);
         
         allow_changes();
         
@@ -75,8 +90,6 @@ create or replace package body payment_detail_api_pack is
   procedure delete_payment_detail(p_payment_id   PAYMENT.PAYMENT_ID%type,
                                   p_number_array t_number_array)
   is
-    v_description     varchar2(100 char) := 'Детали платежа удалены по списку id_полей';
-
   begin
     if p_payment_id is null then
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
@@ -86,7 +99,7 @@ create or replace package body payment_detail_api_pack is
       if p_number_array is not empty then
         
         allow_changes();
-
+      
         delete from PAYMENT_DETAIL pay_d
          where pay_d.PAYMENT_ID = p_payment_id
            and pay_d.FIELD_ID in (select pna.column_value from table(p_number_array) pna);
@@ -108,7 +121,7 @@ create or replace package body payment_detail_api_pack is
   procedure is_changes_throuh_api 
   is
   begin
-    if not g_is_api then
+    if not g_is_api and not payment_common_pack.is_manual_changes_allowed() then
       raise_application_error(payment_common_pack.c_error_code_manual_changes, 
                               payment_common_pack.c_error_msg_manual_changes);
     end if;

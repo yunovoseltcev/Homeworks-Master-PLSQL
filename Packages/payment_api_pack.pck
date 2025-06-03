@@ -33,6 +33,9 @@
   -- Проверка вызываемая из триггера
   procedure is_changes_throuh_api;
   
+  -- Проверка на удаление вызываемая из триггера
+  procedure check_payment_delete_restriction;
+  
 end payment_api_pack;
 /
 
@@ -61,14 +64,13 @@ create or replace package body payment_api_pack is
                            p_create_dtime         timestamp := systimestamp) 
     return PAYMENT.PAYMENT_ID%type
   is
-    v_description     varchar2(100 char) := 'Платеж создан.';
     v_payment_id      PAYMENT.PAYMENT_ID%type;
     
   begin
     if p_payment_detail_array is not empty then
-      payment_common_pack.checkPaymentDetailCollection(p_payment_detail_array);
       
       allow_changes();
+      
       --Создаем запись о платеже
       insert into PAYMENT values (payment_seq.nextval, p_create_dtime, p_summa,
                                   p_currency_id, p_from_client_id, p_to_client_id,
@@ -95,7 +97,6 @@ create or replace package body payment_api_pack is
   procedure fail_payment (p_payment_id   PAYMENT.PAYMENT_ID%type,
                           p_reason       PAYMENT.STATUS_CHANGE_REASON%type)
   is
-    v_description     varchar2(100 char) := 'Сброс платежа в "ошибочный статус" с указанием причины.';
   begin
     if p_payment_id is null then
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
@@ -127,7 +128,6 @@ create or replace package body payment_api_pack is
   procedure cancel_payment (p_payment_id   PAYMENT.PAYMENT_ID%type,
                             p_reason       PAYMENT.STATUS_CHANGE_REASON%type)
   is
-    v_description     varchar2(100 char) := 'Отмена платежа с указанием причины.';
   begin
     if p_payment_id is null then
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
@@ -157,7 +157,6 @@ create or replace package body payment_api_pack is
   -- Платеж завершен успешно
   procedure successful_finish_payment (p_payment_id    PAYMENT.PAYMENT_ID%type)
   is
-    v_description     varchar2(100 char) := 'Успешное завершение платежа.';
   begin
     if p_payment_id is null then
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
@@ -184,11 +183,21 @@ create or replace package body payment_api_pack is
   procedure is_changes_throuh_api 
   is
   begin
-    if not g_is_api then
+    if not g_is_api and not payment_common_pack.is_manual_changes_allowed() then
       raise_application_error(payment_common_pack.c_error_code_manual_changes, 
                               payment_common_pack.c_error_msg_manual_changes);
     end if;
   end is_changes_throuh_api;
+  
+  -- Проверка на удаление вызываемая из триггера
+  procedure check_payment_delete_restriction
+  is
+  begin
+    if not payment_common_pack.is_manual_changes_allowed() then
+      raise_application_error(payment_common_pack.c_error_code_delete_forbidden,
+                              payment_common_pack.c_error_msg_delete_forbidden);
+    end if;
+  end check_payment_delete_restriction;
 
 end payment_api_pack;
 /
