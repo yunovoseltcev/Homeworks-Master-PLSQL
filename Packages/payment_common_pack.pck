@@ -26,9 +26,6 @@
   e_manual_changes exception;
   pragma exception_init(e_manual_changes, c_error_code_manual_changes);
   
-  -- Проверки коллекции t_payment_detail_array
-  procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array);
-  
   -- Включить/отключить разрешение менять вручную данные
   procedure enable_manual_changes;
   procedure disable_manual_changes;
@@ -46,19 +43,6 @@ create or replace package body PAYMENT_COMMON_PACK is
 
   -- Переменные
   g_enable_manual_changes boolean := false; -- Разрешены ли изменения не через API
-
-  -- Проверки коллекции t_payment_detail_array
-  procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array) 
-  is
-  begin
-    for i in p_payment_detail_array.first..p_payment_detail_array.last loop
-        if p_payment_detail_array(i).field_id is null then
-          raise_application_error (c_error_code_empty_invalid_input_parametr, c_error_msg_empty_field_id);
-        elsif p_payment_detail_array(i).field_value is null then
-          raise_application_error (c_error_code_empty_invalid_input_parametr, c_error_msg_empty_field_value);
-        end if;
-      end loop;
-  end checkPaymentDetailCollection;
   
   -- Включить/отключить разрешение менять вручную данные
   procedure enable_manual_changes

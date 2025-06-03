@@ -33,6 +33,21 @@ create or replace package body payment_detail_api_pack is
   begin
     g_is_api := false;
   end;
+  
+  -- Проверки коллекции t_payment_detail_array
+  procedure checkPaymentDetailCollection (p_payment_detail_array t_payment_detail_array) 
+  is
+  begin
+    for i in p_payment_detail_array.first..p_payment_detail_array.last loop
+        if p_payment_detail_array(i).field_id is null then
+          raise_application_error (payment_common_pack.c_error_code_empty_invalid_input_parametr, 
+                                   payment_common_pack.c_error_msg_empty_field_id);
+        elsif p_payment_detail_array(i).field_value is null then
+          raise_application_error (payment_common_pack.c_error_code_empty_invalid_input_parametr, 
+                                   payment_common_pack.c_error_msg_empty_field_value);
+        end if;
+      end loop;
+  end checkPaymentDetailCollection;
 
   -- Добавление или обновление данных платежа по списку
   procedure insert_or_update_payment_detail(p_payment_id           PAYMENT.PAYMENT_ID%type,
@@ -45,7 +60,7 @@ create or replace package body payment_detail_api_pack is
     else
       --Проверки значений в коллекции
       if p_payment_detail_array is not empty then
-        payment_common_pack.checkPaymentDetailCollection(p_payment_detail_array);
+        checkPaymentDetailCollection(p_payment_detail_array);
         
         allow_changes();
         
