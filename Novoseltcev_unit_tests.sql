@@ -305,6 +305,20 @@ exception
 end;
 /
 
+-- 13. Проверка отсутствия платежа
+declare
+  v_payment_id      PAYMENT.PAYMENT_ID%type := 888;
+  v_reason          PAYMENT.STATUS_CHANGE_REASON%type := 'недостаточно средств';
+begin
+  payment_api_pack.fail_payment(p_payment_id   => v_payment_id,
+                                p_reason       => v_reason);
+  raise_application_error(-20999, 'Unit-тест или API выполнены не верно');
+exception 
+  when payment_common_pack.e_payment_not_found then
+    dbms_output.put_line('Проверка отсутствия платежа. Ошибка: '||sqlerrm);
+end;
+/
+
 ------ Тесты для ручных изменений
 -- 1. Проверка разрешения ручного обновления платежа
 declare
