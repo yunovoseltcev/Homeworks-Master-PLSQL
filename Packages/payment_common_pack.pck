@@ -44,6 +44,9 @@
   
   -- Разрешены ли изменения в ручном режиме
   function is_manual_changes_allowed return boolean;
+  
+  -- Блокировка платежа
+  procedure try_block_payment(p_payment_id    PAYMENT.PAYMENT_ID%type);
 
 end PAYMENT_COMMON_PACK;
 /
@@ -75,6 +78,32 @@ create or replace package body PAYMENT_COMMON_PACK is
   begin
     return g_enable_manual_changes;
   end is_manual_changes_allowed;
+  
+  -- Блокировка платежа
+  procedure try_block_payment(p_payment_id    PAYMENT.PAYMENT_ID%type) 
+  is
+    v_status PAYMENT.STATUS%type;
+  begin
+    -- пытаемся заблокировать платеж
+    select t.status 
+      into v_status
+      from payment t 
+     where t.payment_id = p_payment_id
+       for update nowait;
+       
+    -- Платеж уже в финальном статусе. Работа запрещена
+    if v_status != payment_api_pack.c_create_status then
+      raise_application_error(c_error_code_already_in_final_status, 
+                              c_error_msg_already_in_final_status);        
+    end if;
+  exception
+    when no_data_found then --Платеж отсутствует
+      raise_application_error(c_error_code_payment_not_found, 
+                              c_error_msg_payment_not_found);
+    when e_row_blocked then -- Платеж уже заблокирован другой сессией
+      raise_application_error(c_error_code_payment_already_blocked, 
+                              c_error_msg_payment_already_blocked);
+  end try_block_payment;
 
 end PAYMENT_COMMON_PACK;
 /

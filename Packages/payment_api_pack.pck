@@ -56,31 +56,6 @@ create or replace package body payment_api_pack is
   begin
     g_is_api := false;
   end;
-  
-  procedure try_block_payment(p_payment_id    PAYMENT.PAYMENT_ID%type) 
-  is
-    v_status PAYMENT.STATUS%type;
-  begin
-    -- пытаемся заблокировать клиента
-    select t.status 
-      into v_status
-      from payment t 
-     where t.payment_id = p_payment_id
-       for update nowait;
-       
-    -- Платеж уже в финальном статусе. Работа запрещена
-    if v_status != c_create_status then
-      raise_application_error(payment_common_pack.c_error_code_already_in_final_status, 
-                              payment_common_pack.c_error_msg_already_in_final_status);        
-    end if;
-  exception
-    when no_data_found then --Платеж отсутствует
-      raise_application_error(payment_common_pack.c_error_code_payment_not_found, 
-                              payment_common_pack.c_error_msg_payment_not_found);
-    when payment_common_pack.e_row_blocked then -- Платеж уже заблокирован другой сессией
-      raise_application_error(payment_common_pack.c_error_code_payment_already_blocked, 
-                              payment_common_pack.c_error_msg_payment_already_blocked);
-  end try_block_payment;
 
   -- Создание платежа
   function create_payment (p_summa                PAYMENT.SUMMA%type,
@@ -132,7 +107,7 @@ create or replace package body payment_api_pack is
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
                               payment_common_pack.c_error_msg_empty_reason);
     else
-      try_block_payment(p_payment_id);
+      payment_common_pack.try_block_payment(p_payment_id);
       allow_changes();
       
       update PAYMENT pay
@@ -163,7 +138,7 @@ create or replace package body payment_api_pack is
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
                               payment_common_pack.c_error_msg_empty_reason);
     else
-      try_block_payment(p_payment_id);
+      payment_common_pack.try_block_payment(p_payment_id);
       allow_changes();
       
       update PAYMENT pay
@@ -190,7 +165,7 @@ create or replace package body payment_api_pack is
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
                               payment_common_pack.c_error_msg_empty_payment_id);
     else
-      try_block_payment(p_payment_id);
+      payment_common_pack.try_block_payment(p_payment_id);
       allow_changes();
       
       update PAYMENT pay
