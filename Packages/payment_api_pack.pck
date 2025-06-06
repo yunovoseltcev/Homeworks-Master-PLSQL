@@ -44,13 +44,15 @@ create or replace package body payment_api_pack is
   g_is_api boolean := false; -- признак, выполняется ли изменение через API
 
   -- разрешение менять данные
-  procedure allow_changes is
+  procedure allow_changes 
+  is
   begin
     g_is_api := true;
   end;
 
   -- запрет менять данные
-  procedure disallow_changes is
+  procedure disallow_changes 
+  is
   begin
     g_is_api := false;
   end;
@@ -105,7 +107,7 @@ create or replace package body payment_api_pack is
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
                               payment_common_pack.c_error_msg_empty_reason);
     else
-      
+      payment_common_pack.try_block_payment(p_payment_id);
       allow_changes();
       
       update PAYMENT pay
@@ -136,6 +138,7 @@ create or replace package body payment_api_pack is
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
                               payment_common_pack.c_error_msg_empty_reason);
     else
+      payment_common_pack.try_block_payment(p_payment_id);
       allow_changes();
       
       update PAYMENT pay
@@ -162,7 +165,7 @@ create or replace package body payment_api_pack is
       raise_application_error(payment_common_pack.c_error_code_empty_invalid_input_parametr,
                               payment_common_pack.c_error_msg_empty_payment_id);
     else
-      
+      payment_common_pack.try_block_payment(p_payment_id);
       allow_changes();
       
       update PAYMENT pay

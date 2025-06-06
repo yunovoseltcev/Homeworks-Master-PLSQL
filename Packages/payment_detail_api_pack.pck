@@ -62,6 +62,7 @@ create or replace package body payment_detail_api_pack is
       if p_payment_detail_array is not empty then
         checkPaymentDetailCollection(p_payment_detail_array);
         
+        payment_common_pack.try_block_payment_detail(p_payment_id);
         allow_changes();
         
         merge into PAYMENT_DETAIL pay_d using (select pda.field_id, pda.field_value
@@ -98,6 +99,7 @@ create or replace package body payment_detail_api_pack is
       --Проверки значений в коллекции
       if p_number_array is not empty then
         
+        payment_common_pack.try_block_payment_detail(p_payment_id);
         allow_changes();
       
         delete from PAYMENT_DETAIL pay_d
