@@ -14,7 +14,7 @@
   c_error_msg_manual_changes          constant varchar2(100 char) := 'Изменения должны выполняться только через API';
   c_error_msg_already_in_final_status constant varchar2(100 char) := 'Объект в конечном статусе. Изменения невозможны';
   c_error_msg_payment_not_found       constant varchar2(100 char) := 'Объект не найден';
-  c_error_msg_payment_already_blocked constant varchar2(100 char) := 'Объект уже заблокирован';
+  c_error_msg_object_already_blocked  constant varchar2(100 char) := 'Объект уже заблокирован';
   
   -- Коды ошибок
   c_error_code_empty_invalid_input_parametr constant number(10) := -20001;
@@ -22,7 +22,7 @@
   c_error_code_manual_changes               constant number(10) := -20003;
   c_error_code_already_in_final_status      constant number(10) := -20104;
   c_error_code_payment_not_found            constant number(10) := -20105;
-  c_error_code_payment_already_blocked      constant number(10) := -20106;
+  c_error_code_object_already_blocked       constant number(10) := -20106;
   
   -- Объекты исключений
   e_invalid_input_parametr exception;
@@ -33,8 +33,8 @@
   pragma exception_init(e_manual_changes, c_error_code_manual_changes);
   e_row_blocked exception;
   pragma exception_init(e_row_blocked, -00054);
-  e_payment_already_blocked exception;
-  pragma exception_init(e_payment_already_blocked, c_error_code_payment_already_blocked);
+  e_object_already_blocked exception;
+  pragma exception_init(e_object_already_blocked, c_error_code_object_already_blocked);
   e_payment_not_found exception;
   pragma exception_init(e_payment_not_found, c_error_code_payment_not_found);
   
@@ -47,6 +47,9 @@
   
   -- Блокировка платежа
   procedure try_block_payment(p_payment_id    PAYMENT.PAYMENT_ID%type);
+  
+  -- Блокировка платежа
+  procedure try_block_payment_detail(p_payment_id    PAYMENT.PAYMENT_ID%type);
 
 end PAYMENT_COMMON_PACK;
 /
@@ -101,9 +104,44 @@ create or replace package body PAYMENT_COMMON_PACK is
       raise_application_error(c_error_code_payment_not_found, 
                               c_error_msg_payment_not_found);
     when e_row_blocked then -- Платеж уже заблокирован другой сессией
-      raise_application_error(c_error_code_payment_already_blocked, 
-                              c_error_msg_payment_already_blocked);
+      raise_application_error(c_error_code_object_already_blocked, 
+                              c_error_msg_object_already_blocked);
   end try_block_payment;
+  
+  -- Блокировка деталей платежа
+  procedure try_block_payment_detail(p_payment_id    PAYMENT.PAYMENT_ID%type) 
+  is
+    v_status       PAYMENT.STATUS%type;
+    p_number_array t_number_array;
+  begin
+    -- пытаемся заблокировать платеж
+    select pay_det.field_id 
+      bulk collect into p_number_array
+      from payment_detail pay_det
+     where pay_det.payment_id = p_payment_id
+       for update nowait;
+    
+    begin
+      select t.status 
+        into v_status
+        from payment t 
+       where t.payment_id = p_payment_id;
+         
+      -- Платеж уже в финальном статусе. Работа запрещена
+      if v_status != payment_api_pack.c_create_status then
+        raise_application_error(c_error_code_already_in_final_status, 
+                                c_error_msg_already_in_final_status);        
+      end if;
+    exception
+      when no_data_found then --Платеж отсутствует
+        raise_application_error(c_error_code_payment_not_found, 
+                                c_error_msg_payment_not_found);
+    end;
+  exception
+    when e_row_blocked then -- Детали платежа уже заблокированы другой сессией
+        raise_application_error(c_error_code_object_already_blocked, 
+                                c_error_msg_object_already_blocked);
+  end try_block_payment_detail;
 
 end PAYMENT_COMMON_PACK;
 /

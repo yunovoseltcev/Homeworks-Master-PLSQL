@@ -307,7 +307,7 @@ end;
 
 -- 13. Проверка отсутствия платежа
 declare
-  v_payment_id      PAYMENT.PAYMENT_ID%type := 888;
+  v_payment_id      PAYMENT.PAYMENT_ID%type := -888;
   v_reason          PAYMENT.STATUS_CHANGE_REASON%type := 'недостаточно средств';
 begin
   payment_api_pack.fail_payment(p_payment_id   => v_payment_id,
